@@ -97,9 +97,15 @@
     <section id="adminView" class="hidden max-w-2xl mx-auto pt-28 p-6 pb-32">
         <div class="flex justify-between items-end mb-8">
             <h2 class="text-4xl font-black italic text-slate-800 underline decoration-blue-500">HISTORY</h2>
-            <div class="flex gap-2">
-                <button id="adminManualAddBtn" class="px-4 py-2 bg-emerald-500 text-white text-[10px] font-black rounded-full shadow-lg">補登紀錄</button>
-                <button id="adminLogoutBtn" class="px-4 py-2 bg-slate-800 text-white text-[10px] font-black rounded-full">登出</button>
+            <div class="flex flex-col items-end gap-2">
+                <div class="flex gap-2">
+                    <button id="adminManualAddBtn" class="px-4 py-2 bg-emerald-500 text-white text-[10px] font-black rounded-full shadow-lg">補登紀錄</button>
+                    <button id="exportExcelBtn" class="px-4 py-2 bg-blue-500 text-white text-[10px] font-black rounded-full shadow-lg flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        下載 EXCEL
+                    </button>
+                </div>
+                <button id="adminLogoutBtn" class="px-3 py-1 bg-slate-200 text-slate-500 text-[9px] font-black rounded-full">登出系統</button>
             </div>
         </div>
         <div id="teacherTabs" class="flex gap-2 overflow-x-auto no-scrollbar pb-4 border-b border-slate-200"></div>
@@ -145,7 +151,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -161,8 +167,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const PATH = 'sy-production-geo-v1';
-        
-        // 關鍵修正：確保所有地方使用的路徑完全一致
         const getCollectionRef = () => collection(db, 'artifacts', PATH, 'public', 'data', 'attendance');
 
         let logs = [];
@@ -201,21 +205,59 @@
             }
         }
 
+        // --- 導出 EXCEL (CSV) 邏輯 ---
+        document.getElementById('exportExcelBtn').onclick = () => {
+            if (logs.length === 0) return alert("目前沒有資料可以導出");
+
+            // CSV 標頭與資料組合
+            // BOM 用於讓 Excel 正確識別 UTF-8 中文
+            let csvContent = "\uFEFF"; 
+            csvContent += "教師姓名,打卡時間,打卡地點,類型,緯度(Lat),經度(Lng),定位誤差(m)\n";
+
+            // 依據當前過濾器導出資料，或導出全部 (此處設定為導出全部資料)
+            const exportData = [...logs].sort((a,b) => new Date(a.clientTime) - new Date(b.clientTime));
+
+            exportData.forEach(log => {
+                const time = new Date(log.clientTime).toLocaleString('zh-TW', { hour12: false });
+                const lat = log.geo?.lat || "";
+                const lng = log.geo?.lng || "";
+                const acc = log.geo?.accuracy || "";
+                const row = [
+                    `"${log.teacher}"`,
+                    `"${time}"`,
+                    `"${log.location}"`,
+                    `"${log.type}"`,
+                    `"${lat}"`,
+                    `"${lng}"`,
+                    `"${acc}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            // 建立下載連結
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            const dateStr = new Date().toISOString().split('T')[0];
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `軒揚教師打卡紀錄_${dateStr}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
         function showFeedback(teacher, title, mode = "success") {
             const overlay = document.getElementById('successOverlay');
             const card = document.getElementById('successCard');
             const iconWrap = document.getElementById('successIcon');
-            
             iconWrap.className = `w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${mode === 'delete' ? 'bg-rose-100 text-rose-500' : 'bg-emerald-100 text-emerald-500'}`;
-            iconWrap.innerHTML = mode === 'delete' ? 
-                `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>` :
-                `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" /></svg>`;
-
+            iconWrap.innerHTML = mode === 'delete' ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" /></svg>`;
             document.getElementById('successTitle').innerText = title;
             document.getElementById('successTeacher').innerText = teacher ? `${teacher} 老師` : "";
             overlay.classList.remove('hidden');
             card.classList.add('animate-modal-in');
-            
             setTimeout(() => {
                 card.classList.replace('animate-modal-in', 'animate-modal-out');
                 setTimeout(() => { overlay.classList.add('hidden'); card.classList.remove('animate-modal-out'); }, 300);
@@ -255,14 +297,12 @@
             const id = document.getElementById('editId').value;
             const name = document.getElementById('editName').value.trim();
             if (!name) return alert("請輸入姓名");
-            
             const payload = {
                 teacher: name,
                 location: document.getElementById('editLoc').value,
                 type: document.getElementById('editType').value,
                 clientTime: new Date(document.getElementById('editTime').value).toISOString()
             };
-
             hide('editModal');
             try {
                 if (id) {
@@ -271,7 +311,7 @@
                     showFeedback(name, "修改成功");
                 } else {
                     payload.timestamp = serverTimestamp();
-                    payload.geo = "手動補登";
+                    payload.geo = { status: "手動補登" };
                     await addDoc(getCollectionRef(), payload);
                     showFeedback(name, "補登成功");
                 }
@@ -301,14 +341,13 @@
             const name = nameEl.value.trim();
             if (!name) { nameEl.classList.add('border-rose-400'); show('nameError'); return; }
             nameEl.classList.remove('border-rose-400'); hide('nameError');
-            
             showFeedback(name, `${type}成功`);
             try {
                 await addDoc(getCollectionRef(), {
                     teacher: name,
                     location: document.getElementById('locationSelect').value,
                     type,
-                    geo: currentGeo || "無定位資訊",
+                    geo: currentGeo || { status: "無定位資訊" },
                     timestamp: serverTimestamp(),
                     clientTime: new Date().toISOString()
                 });
@@ -323,11 +362,9 @@
             document.getElementById('editName').value = data ? data.teacher : "";
             document.getElementById('editLoc').value = data ? data.location : activeLocs[0];
             document.getElementById('editType').value = data ? data.type : "上班打卡";
-            
             const d = data ? new Date(data.clientTime) : new Date();
             d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
             document.getElementById('editTime').value = d.toISOString().slice(0, 16);
-            
             document.getElementById('preDeleteBtn').classList.toggle('hidden', !id);
             document.getElementById('doSaveBtn').classList.remove('hidden');
             document.getElementById('confirmDeleteBtn').classList.add('hidden');
@@ -338,15 +375,10 @@
             const list = document.getElementById('logList');
             if (!list) return;
             const tNames = [...new Set(logs.map(l => l.teacher))];
-            
-            document.getElementById('teacherTabs').innerHTML = `<button data-t="ALL" class="tab-btn whitespace-nowrap px-4 py-2 text-sm font-black ${filterT === 'ALL' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}">全部</button>` + 
-                tNames.map(t => `<button data-t="${t}" class="tab-btn whitespace-nowrap px-4 py-2 text-sm font-black ${filterT === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}">${t}</button>`).join('');
-            
+            document.getElementById('teacherTabs').innerHTML = `<button data-t="ALL" class="tab-btn whitespace-nowrap px-4 py-2 text-sm font-black ${filterT === 'ALL' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}">全部</button>` + tNames.map(t => `<button data-t="${t}" class="tab-btn whitespace-nowrap px-4 py-2 text-sm font-black ${filterT === t ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}">${t}</button>`).join('');
             document.querySelectorAll('.tab-btn').forEach(b => b.onclick = () => { filterT = b.dataset.t; renderAdmin(); });
-
             const filtered = filterT === 'ALL' ? logs : logs.filter(l => l.teacher === filterT);
-            list.innerHTML = filtered.length ? filtered.map(log => `
-                <div class="glass-effect p-6 rounded-[2rem] border border-white shadow-sm flex justify-between items-center">
+            list.innerHTML = filtered.length ? filtered.map(log => `<div class="glass-effect p-6 rounded-[2rem] border border-white shadow-sm flex justify-between items-center">
                     <div class="space-y-1">
                         <div class="font-black text-slate-800">${log.teacher} <span class="text-[10px] font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">${log.type}</span></div>
                         <div class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">${log.location}</div>
@@ -354,42 +386,30 @@
                     </div>
                     <button class="edit-trigger text-xs text-blue-500 font-black px-4 py-3 bg-blue-50 rounded-2xl active:scale-95 transition-transform" data-id="${log.id}">修正</button>
                 </div>`).join('') : '<div class="text-center py-20 text-slate-300 font-bold">目前尚無歷史紀錄</div>';
-            
             document.querySelectorAll('.edit-trigger').forEach(b => b.onclick = () => openEditModal(b.dataset.id));
         }
 
         (async () => {
             try {
                 await signInAnonymously(auth);
-                
-                // 核心同步邏輯：確保即時監聽並更新全域 logs
                 onSnapshot(getCollectionRef(), (snap) => {
                     logs = [];
                     snap.forEach(d => logs.push({ id: d.id, ...d.data() }));
-                    // 依時間由新到舊排序
                     logs.sort((a, b) => new Date(b.clientTime) - new Date(a.clientTime));
-                    
-                    // 如果目前人在後台，即時重新渲染列表
-                    if (sessionStorage.getItem('sy_admin_verified') === 'true') {
-                        renderAdmin();
-                    }
-                }, (err) => console.error("Snapshot Error:", err));
-
+                    if (sessionStorage.getItem('sy_admin_verified') === 'true') renderAdmin();
+                });
                 if (navigator.geolocation) {
                     navigator.geolocation.watchPosition(pos => {
                         currentGeo = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: Math.round(pos.coords.accuracy) };
-                        const dot = document.getElementById('statusDot');
-                        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]";
+                        document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]";
                         document.getElementById('statusText').innerText = `定位中 (誤差${currentGeo.accuracy}m)`;
                     });
                 }
-
                 refreshLocUI();
                 const last = localStorage.getItem('sy_name_geo');
                 if (last) document.getElementById('teacherName').value = last;
                 if (sessionStorage.getItem('sy_admin_verified') === 'true') switchView('admin');
-
-            } catch (e) { console.error("Init Error:", e); }
+            } catch (e) { console.error(e); }
         })();
     </script>
 </body>
