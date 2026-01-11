@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>軒揚數理教師打卡系統</title>
+    <title>軒揚數理教師打卡系統 測試中</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -12,7 +13,6 @@
         .punch-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .punch-btn:active { transform: scale(0.95); opacity: 0.9; }
         .gradient-bg { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         
         @keyframes modalIn {
             0% { opacity: 0; transform: scale(0.9) translateY(20px); }
@@ -21,7 +21,6 @@
         .animate-modal-in { animation: modalIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         
         button svg, button span { pointer-events: none; }
-        .month-tab.active { background-color: #0f172a; color: white; border-color: #0f172a; }
     </style>
 </head>
 <body class="gradient-bg min-h-screen text-slate-900">
@@ -32,27 +31,22 @@
             <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
             <span id="statusText" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">定位初始化...</span>
         </div>
-        <div class="flex gap-2">
-            <button id="viewHistoryBtn" class="w-10 h-10 glass-effect rounded-full flex items-center justify-center text-slate-500 border border-white shadow-sm active:scale-90 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </button>
-            <button id="navAdminBtn" class="w-10 h-10 glass-effect rounded-full flex items-center justify-center text-slate-500 border border-white shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-            </button>
-        </div>
+        <button id="navAdminBtn" class="w-10 h-10 glass-effect rounded-full flex items-center justify-center text-slate-500 border border-white shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+        </button>
     </nav>
 
     <!-- 主打卡畫面 -->
     <main id="punchView" class="max-w-md mx-auto pt-28 pb-10 px-6 space-y-10">
         <div class="text-center space-y-1">
             <h1 class="text-5xl font-black tracking-tighter text-slate-800">軒揚數理</h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">教師打卡系統</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">教師打卡系統 測試中</p>
         </div>
 
         <div class="space-y-6">
             <div class="space-y-2 relative">
                 <label class="px-4 text-[10px] font-black text-slate-400 tracking-widest uppercase">Teacher Name</label>
-                <input id="teacherName" type="text" placeholder="輸入姓名" class="w-full glass-effect p-6 rounded-[2rem] text-xl font-bold border-2 border-transparent shadow-xl outline-none focus:border-blue-400 transition-all">
+                <input id="teacherName" type="text" placeholder="輸入姓名" class="w-full glass-effect p-6 rounded-[2rem] text-xl font-bold border-2 border-transparent shadow-xl outline-none">
                 <div id="nameError" class="hidden absolute left-5 -bottom-6 text-rose-500 text-xs font-bold">請輸入教師姓名</div>
             </div>
 
@@ -67,6 +61,7 @@
             </div>
 
             <div class="pt-4 space-y-4">
+                <!-- 補打卡文字連結 -->
                 <div class="text-center px-2">
                     <p class="text-sm font-bold text-slate-500">
                         如需補打卡，請洽 
@@ -84,20 +79,8 @@
         </div>
     </main>
 
-    <!-- 歷史紀錄介面 -->
-    <section id="historyView" class="hidden fixed inset-0 z-50 bg-slate-50 flex flex-col p-6 animate-modal-in">
-        <div class="flex justify-between items-center mb-6 pt-4">
-            <h3 class="text-2xl font-black text-slate-800">歷史紀錄查詢</h3>
-            <button id="closeHistoryBtn" class="w-10 h-10 flex items-center justify-center bg-slate-200 rounded-full text-slate-600 font-bold">✕</button>
-        </div>
-        <div id="monthTabs" class="flex gap-2 mb-6 overflow-x-auto no-scrollbar"></div>
-        <div id="historyList" class="space-y-4 overflow-y-auto no-scrollbar pb-10 flex-1">
-            <p class="text-center text-slate-400 py-10 font-bold italic">請稍候...</p>
-        </div>
-    </section>
-
     <!-- 管理端驗證 -->
-    <section id="authView" class="hidden fixed inset-0 z-50 bg-white/95 backdrop-blur-md flex items-center justify-center p-8 animate-modal-in">
+    <section id="authView" class="hidden fixed inset-0 z-50 bg-white/95 backdrop-blur-md flex items-center justify-center p-8">
         <div class="w-full max-w-sm text-center">
             <h3 class="font-black text-2xl mb-8 uppercase tracking-widest text-slate-400">管理端驗證</h3>
             <div id="passwordSection" class="space-y-4">
@@ -125,9 +108,9 @@
         </div>
     </div>
 
-    <!-- 成功提示 -->
+    <!-- 成功與載入遮罩 (省略部分細節保持程式碼精簡) -->
     <div id="successOverlay" class="hidden fixed inset-0 z-[200] flex items-center justify-center px-8 bg-slate-900/60 backdrop-blur-md">
-        <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl animate-modal-in">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 text-center shadow-2xl">
             <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-emerald-100 text-emerald-500">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" /></svg>
             </div>
@@ -135,8 +118,6 @@
             <p id="successTeacher" class="text-xl font-bold text-slate-600"></p>
         </div>
     </div>
-
-    <!-- 載入遮罩 -->
     <div id="loadingOverlay" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-white/50 backdrop-blur-sm">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
     </div>
@@ -148,7 +129,6 @@
         const PRESET_LOCS = ['文星文理補習班（大社吉的堡）', '鳳翔文理補習班', '麥克亞綸文理補習班'];
         let activeLocs = JSON.parse(localStorage.getItem('sy_locs_v2')) || PRESET_LOCS;
         let currentGeo = null;
-        let historyData = null; 
 
         const hide = (id) => document.getElementById(id).classList.add('hidden');
         const show = (id) => document.getElementById(id).classList.remove('hidden');
@@ -159,107 +139,14 @@
             if (selectedValue) select.value = selectedValue;
         }
 
-        function showLoading(isVisible) { 
-            document.getElementById('loadingOverlay').classList.toggle('hidden', !isVisible); 
-        }
+        function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('hidden', !show); }
 
         function showFeedback(teacher, title) {
             const overlay = document.getElementById('successOverlay');
             document.getElementById('successTitle').innerText = title;
-            document.getElementById('successTeacher').innerText = teacher + "，辛苦了！";
+            document.getElementById('successTeacher').innerText = "G'day, fella!";
             overlay.classList.remove('hidden');
             setTimeout(() => overlay.classList.add('hidden'), 3000);
-        }
-
-        async function fetchHistory() {
-            const nameEl = document.getElementById('teacherName');
-            const name = nameEl.value.trim();
-            
-            if (!name) { 
-                nameEl.classList.add('border-rose-400'); 
-                document.getElementById('nameError').classList.remove('hidden'); 
-                return; 
-            }
-            
-            document.getElementById('nameError').classList.add('hidden');
-            nameEl.classList.remove('border-rose-400');
-            
-            show('historyView');
-            showLoading(true);
-            document.getElementById('historyList').innerHTML = '<p class="text-center text-slate-400 py-10 font-bold italic">資料載入中...</p>';
-            
-            try {
-                const response = await fetch(`${GAS_URL}?teacher=${encodeURIComponent(name)}`);
-                const text = await response.text();
-                
-                // 解析 JSON
-                const jsonStartIndex = text.indexOf('{');
-                const jsonEndIndex = text.lastIndexOf('}') + 1;
-                if (jsonStartIndex === -1) throw new Error("無效的資料格式");
-                
-                historyData = JSON.parse(text.substring(jsonStartIndex, jsonEndIndex));
-                
-                if (historyData && historyData.months && historyData.months.length > 0) {
-                    renderTabs();
-                    renderHistory(historyData.months[0]);
-                } else {
-                    document.getElementById('historyList').innerHTML = `
-                        <div class="text-center py-20">
-                            <p class="text-slate-400 font-bold">查無「${name}」的打卡紀錄</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('查詢失敗:', error);
-                document.getElementById('historyList').innerHTML = `
-                    <div class="text-center py-20 px-6">
-                        <p class="text-rose-500 font-bold">查詢失敗</p>
-                        <p class="text-slate-400 text-xs mt-2">請確認後端腳本已正確部署</p>
-                    </div>
-                `;
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function renderTabs() {
-            const container = document.getElementById('monthTabs');
-            if (!historyData || !historyData.months) return;
-            
-            container.innerHTML = historyData.months.map((m, i) => `
-                <button onclick="renderHistory('${m}')" class="month-tab min-w-[100px] py-3 px-4 rounded-2xl font-bold transition-all border border-slate-200 whitespace-nowrap ${i===0 ? 'active' : 'bg-white text-slate-500'}">
-                    ${m}
-                </button>
-            `).join('');
-        }
-
-        function renderHistory(monthLabel) {
-            document.querySelectorAll('.month-tab').forEach(btn => {
-                const isActive = btn.innerText.trim() === monthLabel;
-                btn.classList.toggle('active', isActive);
-                btn.classList.toggle('bg-white', !isActive);
-                btn.classList.toggle('text-slate-500', !isActive);
-            });
-
-            const list = document.getElementById('historyList');
-            const records = (historyData.data && historyData.data[monthLabel]) ? historyData.data[monthLabel] : [];
-            
-            if (records.length === 0) {
-                list.innerHTML = `<p class="text-center text-slate-400 py-20 font-bold">${monthLabel} 沒有紀錄</p>`;
-                return;
-            }
-
-            list.innerHTML = records.map(r => `
-                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex justify-between items-center">
-                    <div class="space-y-1">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${r.time}</p>
-                        <p class="text-lg font-bold text-slate-800">${r.location}</p>
-                    </div>
-                    <span class="px-4 py-1.5 rounded-full text-xs font-black ${r.type.includes('上班') ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'}">
-                        ${r.type.replace('打卡','')}
-                    </span>
-                </div>
-            `).join('');
         }
 
         async function handlePunch(type) {
@@ -289,7 +176,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
                 showLoading(false);
                 showFeedback(name, `${type}成功`);
                 localStorage.setItem('sy_name_last', name);
@@ -310,15 +196,12 @@
 
         document.getElementById('logoutBtn').onclick = () => {
             hide('adminContent'); show('passwordSection'); hide('authView');
-            document.getElementById('adminPassword').value = "";
         };
 
         document.getElementById('navAdminBtn').onclick = () => show('authView');
         document.getElementById('authBackBtn').onclick = () => hide('authView');
         document.getElementById('addLocBtn').onclick = () => show('locModal');
         document.getElementById('closeLocBtn').onclick = () => hide('locModal');
-        document.getElementById('viewHistoryBtn').onclick = fetchHistory;
-        document.getElementById('closeHistoryBtn').onclick = () => hide('historyView');
         
         document.getElementById('confirmLocBtn').onclick = () => {
             const val = document.getElementById('newLocInput').value.trim();
